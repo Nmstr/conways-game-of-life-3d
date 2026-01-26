@@ -1,0 +1,26 @@
+[gd_scene load_steps=6 format=3 uid="uid://br4dw4hoq5ylt"]
+
+[ext_resource type="Shader" uid="uid://dpq0weol8vtgv" path="res://ghost.gdshader" id="1_pcwuq"]
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_pcwuq"]
+
+[sub_resource type="BoxMesh" id="BoxMesh_bew7s"]
+material = SubResource("StandardMaterial3D_pcwuq")
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_pcwuq"]
+render_priority = 0
+shader = ExtResource("1_pcwuq")
+shader_parameter/albedo = Color(0.6, 0.6, 0.6, 1)
+shader_parameter/outline_width = 3.0
+
+[sub_resource type="BoxMesh" id="BoxMesh_yhjyq"]
+material = SubResource("ShaderMaterial_pcwuq")
+
+[node name="Meshes" type="Node3D"]
+
+[node name="Living" type="MeshInstance3D" parent="."]
+visible = false
+mesh = SubResource("BoxMesh_bew7s")
+
+[node name="Ghost" type="MeshInstance3D" parent="."]
+mesh = SubResource("BoxMesh_yhjyq")
