@@ -1,13 +1,13 @@
-[gd_scene load_steps=4 format=3 uid="uid://cf6y7d33jhnuv"]
+[gd_scene format=3 uid="uid://cf6y7d33jhnuv"]
 
 [ext_resource type="MeshLibrary" uid="uid://cea131wcds5ce" path="res://meshes.tres" id="1_pq8q7"]
-[ext_resource type="Script" uid="uid://beo7k5kjf5ljb" path="res://grid.gd" id="2_pyidc"]
+[ext_resource type="Script" uid="uid://bompkiqyp8wcm" path="res://Grid.cs" id="2_pyidc"]
 
 [sub_resource type="Environment" id="Environment_pq8q7"]
 
-[node name="Root" type="Node3D"]
+[node name="Root" type="Node3D" unique_id=531203096]
 
-[node name="Grid" type="GridMap" parent="."]
+[node name="Grid" type="GridMap" parent="." unique_id=1106577046]
 mesh_library = ExtResource("1_pq8q7")
 cell_size = Vector3(1, 1, 1)
 data = {
@@ -15,14 +15,15 @@ data = {
 }
 script = ExtResource("2_pyidc")
 
-[node name="Camera3D" type="Camera3D" parent="."]
+[node name="Camera3D" type="Camera3D" parent="." unique_id=1821968641]
 transform = Transform3D(0.67222863, -0.31924352, 0.6679761, -0.100517765, 0.85454035, 0.5095653, -0.73348796, -0.40968797, 0.54235685, 26.749407, 23.517204, 25.942673)
 
-[node name="WorldEnvironment" type="WorldEnvironment" parent="."]
+[node name="WorldEnvironment" type="WorldEnvironment" parent="." unique_id=1222809758]
 environment = SubResource("Environment_pq8q7")
 
-[node name="DirectionalLight3D" type="DirectionalLight3D" parent="."]
+[node name="DirectionalLight3D" type="DirectionalLight3D" parent="." unique_id=641852568]
 transform = Transform3D(1, 0, 0, 0, 0.8070531, 0.5904789, 0, -0.5904789, 0.8070531, 0, 12.049793, 12.737794)
 
-[node name="TickTimer" type="Timer" parent="."]
+[node name="TickTimer" type="Timer" parent="." unique_id=1018195486]
+wait_time = 0.001
 autostart = true
