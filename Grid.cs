@@ -5,9 +5,9 @@ using Godot.Collections;
 
 public partial class Grid : GridMap
 {
-	private int _emptyCellIdx = -1;
-	private int _livingCellIdx = 0;
-	private int _ghostCellIdx = 1;
+	private const int EmptyCellIdx = -1;
+	private const int LivingCellIdx = 0;
+	private const int GhostCellIdx = 1;
 	
 	public override void _Ready()
 	{
@@ -45,13 +45,13 @@ public partial class Grid : GridMap
 		Array<Vector3I> usedCells = GetUsedCells();
 		foreach (var cell in usedCells)
 		{
-			if (GetCellItem(cell) == _ghostCellIdx)
+			if (GetCellItem(cell) == GhostCellIdx)
 			{
 				// Ghost Cell
 				bool hasLivingNeighbor = false;
 				foreach (Vector3I neighbor in GetNeighborCells(cell))
 				{
-					if (GetCellItem(neighbor) == _livingCellIdx)
+					if (GetCellItem(neighbor) == LivingCellIdx)
 					{
 						hasLivingNeighbor = true;
 						break;
@@ -59,7 +59,7 @@ public partial class Grid : GridMap
 				}
 				if (!hasLivingNeighbor)
 				{
-					SetCellItem(cell, _emptyCellIdx);
+					SetCellItem(cell, EmptyCellIdx);
 				}
 			}
 			else
@@ -67,9 +67,9 @@ public partial class Grid : GridMap
 				// Living Cell
 				foreach (Vector3I neighbor in GetNeighborCells(cell))
 				{
-					if (GetCellItem(neighbor) == _emptyCellIdx)
+					if (GetCellItem(neighbor) == EmptyCellIdx)
 					{
-						SetCellItem(neighbor, _ghostCellIdx);
+						SetCellItem(neighbor, GhostCellIdx);
 					}
 				}
 			}
@@ -81,25 +81,25 @@ public partial class Grid : GridMap
 		int livingNeighborCount = 0;
 		foreach (Vector3I neighbor in GetNeighborCells(cell))
 		{
-			if (GetCellItem(neighbor) == _livingCellIdx)
+			if (GetCellItem(neighbor) == LivingCellIdx)
 			{
 				livingNeighborCount++;
 			}
 		}
 
-		if (GetCellItem(cell) == _livingCellIdx)
+		if (GetCellItem(cell) == LivingCellIdx)
 		{
 			if (livingNeighborCount < 2 || livingNeighborCount > 3) 
 			{
-				return _ghostCellIdx;
+				return GhostCellIdx;
 			}
-			return _livingCellIdx;
+			return LivingCellIdx;
 		}
 		if (livingNeighborCount == 3)
 		{
-			return _livingCellIdx;
+			return LivingCellIdx;
 		}
-		return _ghostCellIdx;
+		return GhostCellIdx;
 	}
 
 	public List<Vector3I> GetNeighborCells(Vector3I cell)
