@@ -16,13 +16,12 @@ public partial class Grid : GridMap
 	public override void _Ready()
 	{
 		GetNode<Timer>("../TickTimer").Timeout += RunIteration;
+		PadGhostCells();
 	}
 
 	private void RunIteration()
 	{
 		_stopwatch.Start();
-		
-		PadGhostCells();
 		
 		// Calculate changed cells
 		System.Collections.Generic.Dictionary<Vector3I, int> cellChanges = new System.Collections.Generic.Dictionary<Vector3I, int>();
@@ -45,26 +44,6 @@ public partial class Grid : GridMap
 		_iterationCount++;
 		GD.Print("Finished Iteration: ", _iterationCount, ", Took: " + _stopwatch.Elapsed.TotalMilliseconds + "ms");
 		_stopwatch.Reset();
-	}
-
-	// Replaces all empty cells around living cells with ghost cells
-	private void PadGhostCells()
-	{
-		Array<Vector3I> usedCells = GetUsedCells();
-		foreach (var cell in usedCells)
-		{
-			if (GetCellState(cell) == LivingCellIdx)
-			{
-				// Living Cell
-				foreach (Vector3I neighbor in GetNeighborCells(cell))
-				{
-					if (GetCellState(neighbor) == EmptyCellIdx)
-					{
-						SetCellState(neighbor, GhostCellIdx);
-					}
-				}
-			}
-		}
 	}
 
 	private int GetCellUpdate(Vector3I cell)
@@ -94,9 +73,41 @@ public partial class Grid : GridMap
 			return EmptyCellIdx;
 		} else if (livingNeighborCount == 3)
 		{
+			PadCell(cell);
 			return LivingCellIdx;
 		}
 		return GhostCellIdx;
+	}
+
+	private void PadCell(Vector3I cell)
+	{
+		foreach (Vector3I neighbor in GetNeighborCells(cell))
+		{
+			if (GetCellState(neighbor) == EmptyCellIdx)
+			{
+				SetCellState(neighbor, GhostCellIdx);
+			}
+		}
+	}
+
+	// Replaces all empty cells around living cells with ghost cells
+	private void PadGhostCells()
+	{
+		Array<Vector3I> usedCells = GetUsedCells();
+		foreach (var cell in usedCells)
+		{
+			if (GetCellState(cell) == LivingCellIdx)
+			{
+				// Living Cell
+				foreach (Vector3I neighbor in GetNeighborCells(cell))
+				{
+					if (GetCellState(neighbor) == EmptyCellIdx)
+					{
+						SetCellState(neighbor, GhostCellIdx);
+					}
+				}
+			}
+		}
 	}
 
 	private List<Vector3I> GetNeighborCells(Vector3I cell)
