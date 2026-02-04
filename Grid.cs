@@ -1,5 +1,6 @@
 using Godot;
 using System.Collections.Generic;
+using System.Diagnostics;
 using Godot.Collections;
 
 
@@ -9,6 +10,7 @@ public partial class Grid : GridMap
 	private const int LivingCellIdx = 0;
 	private const int GhostCellIdx = 1;
 	private int _iterationCount = 0;
+	private readonly Stopwatch _stopwatch = new Stopwatch();
 	
 	public override void _Ready()
 	{
@@ -17,6 +19,8 @@ public partial class Grid : GridMap
 
 	private void RunIteration()
 	{
+		_stopwatch.Start();
+		
 		CleanGhostCells();
 		
 		// Calculate changed cells
@@ -36,8 +40,10 @@ public partial class Grid : GridMap
 			SetCellItem(cell, cellChanges[cell]);
 		}
 
+		_stopwatch.Stop();
 		_iterationCount++;
-		GD.Print("Finished Iteration: ", _iterationCount);
+		GD.Print("Finished Iteration: ", _iterationCount, ", Took: " + _stopwatch.Elapsed.TotalMilliseconds + "ms");
+		_stopwatch.Reset();
 	}
 
 	// Removes all ghost cells that do not neighbor a living cell
