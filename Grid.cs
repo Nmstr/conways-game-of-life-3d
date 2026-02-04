@@ -12,10 +12,10 @@ public partial class Grid : GridMap
 	
 	public override void _Ready()
 	{
-		GetNode<Timer>("../TickTimer").Timeout += Tick;
+		GetNode<Timer>("../TickTimer").Timeout += RunIteration;
 	}
 
-	public void Tick()
+	private void RunIteration()
 	{
 		CleanGhostCells();
 		
@@ -42,7 +42,7 @@ public partial class Grid : GridMap
 
 	// Removes all ghost cells that do not neighbor a living cell
 	// Also replaces all empty cells around living cells with ghost cells
-	public void CleanGhostCells()
+	private void CleanGhostCells()
 	{
 		Array<Vector3I> usedCells = GetUsedCells();
 		foreach (var cell in usedCells)
@@ -78,7 +78,7 @@ public partial class Grid : GridMap
 		}
 	}
 
-	public int GetCellUpdate(Vector3I cell)
+	private int GetCellUpdate(Vector3I cell)
 	{
 		int livingNeighborCount = 0;
 		foreach (Vector3I neighbor in GetNeighborCells(cell))
@@ -104,7 +104,7 @@ public partial class Grid : GridMap
 		return GhostCellIdx;
 	}
 
-	public List<Vector3I> GetNeighborCells(Vector3I cell)
+	private List<Vector3I> GetNeighborCells(Vector3I cell)
 	{
 		List<Vector3I> neighbors = new List<Vector3I>();
 		for (int x = -1; x < 2; x++)
