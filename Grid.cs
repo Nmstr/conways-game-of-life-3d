@@ -11,6 +11,7 @@ public partial class Grid : GridMap
 	private const int GhostCellIdx = 1;
 	private int _iterationCount = 0;
 	private readonly Stopwatch _stopwatch = new Stopwatch();
+	private System.Collections.Generic.Dictionary<Vector3I, int> _cellStateCache = new System.Collections.Generic.Dictionary<Vector3I, int>();
 	
 	public override void _Ready()
 	{
@@ -28,7 +29,7 @@ public partial class Grid : GridMap
 		foreach (Vector3I cell in GetUsedCells())
 		{
 			int cellUpdate = GetCellUpdate(cell);
-			if (GetCellItem(cell) != cellUpdate)
+			if (GetCellState(cell) != cellUpdate)
 			{
 				cellChanges[cell] = cellUpdate;
 			}
@@ -39,6 +40,9 @@ public partial class Grid : GridMap
 		{
 			SetCellItem(cell, cellChanges[cell]);
 		}
+		
+		// Invalidate old cache
+		_cellStateCache.Clear();
 
 		_stopwatch.Stop();
 		_iterationCount++;
@@ -53,13 +57,13 @@ public partial class Grid : GridMap
 		Array<Vector3I> usedCells = GetUsedCells();
 		foreach (var cell in usedCells)
 		{
-			if (GetCellItem(cell) == GhostCellIdx)
+			if (GetCellState(cell) == GhostCellIdx)
 			{
 				// Ghost Cell
 				bool hasLivingNeighbor = false;
 				foreach (Vector3I neighbor in GetNeighborCells(cell))
 				{
-					if (GetCellItem(neighbor) == LivingCellIdx)
+					if (GetCellState(neighbor) == LivingCellIdx)
 					{
 						hasLivingNeighbor = true;
 						break;
@@ -75,7 +79,7 @@ public partial class Grid : GridMap
 				// Living Cell
 				foreach (Vector3I neighbor in GetNeighborCells(cell))
 				{
-					if (GetCellItem(neighbor) == EmptyCellIdx)
+					if (GetCellState(neighbor) == EmptyCellIdx)
 					{
 						SetCellItem(neighbor, GhostCellIdx);
 					}
@@ -89,7 +93,7 @@ public partial class Grid : GridMap
 		int livingNeighborCount = 0;
 		foreach (Vector3I neighbor in GetNeighborCells(cell))
 		{
-			if (GetCellItem(neighbor) == LivingCellIdx)
+			if (GetCellState(neighbor) == LivingCellIdx)
 			{
 				livingNeighborCount++;
 			}
@@ -128,5 +132,16 @@ public partial class Grid : GridMap
 			}
 		}
 		return neighbors;
+	}
+
+	private int GetCellState(Vector3I cell)
+	{
+		if (_cellStateCache.ContainsKey(cell))
+		{
+			return _cellStateCache[cell];
+		}
+		int cellState = GetCellItem(cell);
+		_cellStateCache.Add(cell, cellState);
+		return cellState;
 	}
 }
