@@ -24,15 +24,7 @@ public partial class Grid : GridMap
 		_stopwatch.Start();
 		
 		// Calculate changed cells
-		System.Collections.Generic.Dictionary<Vector3I, int> cellChanges = new System.Collections.Generic.Dictionary<Vector3I, int>();
-		foreach (Vector3I cell in GetUsedCells())
-		{
-			int cellUpdate = GetCellUpdate(cell, cellChanges);
-			if (GetCellState(cell) != cellUpdate)
-			{
-				cellChanges[cell] = cellUpdate;
-			}
-		}
+		System.Collections.Generic.Dictionary<Vector3I, int> cellChanges = CalculateCellChanges(GetUsedCells());
 
 		// Apply changes
 		foreach (Vector3I cell in cellChanges.Keys)
@@ -44,6 +36,20 @@ public partial class Grid : GridMap
 		_iterationCount++;
 		GD.Print("Finished Iteration: ", _iterationCount, ", Took: " + _stopwatch.Elapsed.TotalMilliseconds + "ms");
 		_stopwatch.Reset();
+	}
+
+	private System.Collections.Generic.Dictionary<Vector3I, int> CalculateCellChanges(Array<Vector3I> cellSlice)
+	{
+		System.Collections.Generic.Dictionary<Vector3I, int> localChanges = new System.Collections.Generic.Dictionary<Vector3I, int>();
+		foreach (Vector3I cell in cellSlice)
+		{
+			int cellUpdate = GetCellUpdate(cell, localChanges);
+			if (GetCellState(cell) != cellUpdate)
+			{
+				localChanges[cell] = cellUpdate;
+			}
+		}
+		return localChanges;
 	}
 
 	private int GetCellUpdate(Vector3I cell, System.Collections.Generic.Dictionary<Vector3I, int> cellChanges)
