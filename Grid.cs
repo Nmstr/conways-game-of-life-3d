@@ -11,7 +11,7 @@ public partial class Grid : GridMap
 	private const int GhostCellIdx = 1;
 	private int _iterationCount = 0;
 	private readonly Stopwatch _stopwatch = new Stopwatch();
-	private System.Collections.Generic.Dictionary<Vector3I, int> _cellStateCache = new System.Collections.Generic.Dictionary<Vector3I, int>();
+	private readonly System.Collections.Generic.Dictionary<Vector3I, int> _cellStateCache = new System.Collections.Generic.Dictionary<Vector3I, int>();
 	
 	public override void _Ready()
 	{
@@ -38,12 +38,9 @@ public partial class Grid : GridMap
 		// Apply changes
 		foreach (Vector3I cell in cellChanges.Keys)
 		{
-			SetCellItem(cell, cellChanges[cell]);
+			SetCellState(cell, cellChanges[cell]);
 		}
 		
-		// Invalidate old cache
-		_cellStateCache.Clear();
-
 		_stopwatch.Stop();
 		_iterationCount++;
 		GD.Print("Finished Iteration: ", _iterationCount, ", Took: " + _stopwatch.Elapsed.TotalMilliseconds + "ms");
@@ -71,7 +68,7 @@ public partial class Grid : GridMap
 				}
 				if (!hasLivingNeighbor)
 				{
-					SetCellItem(cell, EmptyCellIdx);
+					SetCellState(cell, EmptyCellIdx);
 				}
 			}
 			else
@@ -81,7 +78,7 @@ public partial class Grid : GridMap
 				{
 					if (GetCellState(neighbor) == EmptyCellIdx)
 					{
-						SetCellItem(neighbor, GhostCellIdx);
+						SetCellState(neighbor, GhostCellIdx);
 					}
 				}
 			}
@@ -143,5 +140,11 @@ public partial class Grid : GridMap
 		int cellState = GetCellItem(cell);
 		_cellStateCache.Add(cell, cellState);
 		return cellState;
+	}
+
+	private void SetCellState(Vector3I cell, int cellState)
+	{
+		SetCellItem(cell, cellState);
+		_cellStateCache[cell] = cellState;
 	}
 }
