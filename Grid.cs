@@ -22,7 +22,7 @@ public partial class Grid : GridMap
 	{
 		_stopwatch.Start();
 		
-		CleanGhostCells();
+		PadGhostCells();
 		
 		// Calculate changed cells
 		System.Collections.Generic.Dictionary<Vector3I, int> cellChanges = new System.Collections.Generic.Dictionary<Vector3I, int>();
@@ -47,31 +47,13 @@ public partial class Grid : GridMap
 		_stopwatch.Reset();
 	}
 
-	// Removes all ghost cells that do not neighbor a living cell
-	// Also replaces all empty cells around living cells with ghost cells
-	private void CleanGhostCells()
+	// Replaces all empty cells around living cells with ghost cells
+	private void PadGhostCells()
 	{
 		Array<Vector3I> usedCells = GetUsedCells();
 		foreach (var cell in usedCells)
 		{
-			if (GetCellState(cell) == GhostCellIdx)
-			{
-				// Ghost Cell
-				bool hasLivingNeighbor = false;
-				foreach (Vector3I neighbor in GetNeighborCells(cell))
-				{
-					if (GetCellState(neighbor) == LivingCellIdx)
-					{
-						hasLivingNeighbor = true;
-						break;
-					}
-				}
-				if (!hasLivingNeighbor)
-				{
-					SetCellState(cell, EmptyCellIdx);
-				}
-			}
-			else
+			if (GetCellState(cell) == LivingCellIdx)
 			{
 				// Living Cell
 				foreach (Vector3I neighbor in GetNeighborCells(cell))
@@ -98,13 +80,19 @@ public partial class Grid : GridMap
 
 		if (GetCellItem(cell) == LivingCellIdx)
 		{
+			// Living Cell
 			if (livingNeighborCount < 2 || livingNeighborCount > 3) 
 			{
 				return GhostCellIdx;
 			}
 			return LivingCellIdx;
 		}
-		if (livingNeighborCount == 3)
+		
+		// Ghost Cell
+		if (livingNeighborCount == 0)
+		{
+			return EmptyCellIdx;
+		} else if (livingNeighborCount == 3)
 		{
 			return LivingCellIdx;
 		}
