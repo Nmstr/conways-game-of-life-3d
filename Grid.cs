@@ -8,6 +8,7 @@ public partial class Grid : GridMap
 	private const int EmptyCellIdx = -1;
 	private const int LivingCellIdx = 0;
 	private const int GhostCellIdx = 1;
+	private int _iterationCount = 0;
 	
 	public override void _Ready()
 	{
@@ -34,8 +35,9 @@ public partial class Grid : GridMap
 		{
 			SetCellItem(cell, cellChanges[cell]);
 		}
-		
-		GD.Print("Tick finished");
+
+		_iterationCount++;
+		GD.Print("Finished Iteration: ", _iterationCount);
 	}
 
 	// Removes all ghost cells that do not neighbor a living cell
