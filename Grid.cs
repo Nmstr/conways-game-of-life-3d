@@ -27,7 +27,7 @@ public partial class Grid : GridMap
 		System.Collections.Generic.Dictionary<Vector3I, int> cellChanges = new System.Collections.Generic.Dictionary<Vector3I, int>();
 		foreach (Vector3I cell in GetUsedCells())
 		{
-			int cellUpdate = GetCellUpdate(cell);
+			int cellUpdate = GetCellUpdate(cell, cellChanges);
 			if (GetCellState(cell) != cellUpdate)
 			{
 				cellChanges[cell] = cellUpdate;
@@ -46,7 +46,7 @@ public partial class Grid : GridMap
 		_stopwatch.Reset();
 	}
 
-	private int GetCellUpdate(Vector3I cell)
+	private int GetCellUpdate(Vector3I cell, System.Collections.Generic.Dictionary<Vector3I, int> cellChanges)
 	{
 		int livingNeighborCount = 0;
 		foreach (Vector3I neighbor in GetNeighborCells(cell))
@@ -73,19 +73,20 @@ public partial class Grid : GridMap
 			return EmptyCellIdx;
 		} else if (livingNeighborCount == 3)
 		{
-			PadCell(cell);
+			PadCell(cell, cellChanges);
 			return LivingCellIdx;
 		}
 		return GhostCellIdx;
 	}
 
-	private void PadCell(Vector3I cell)
+	private void PadCell(Vector3I cell, System.Collections.Generic.Dictionary<Vector3I, int> cellChanges)
 	{
 		foreach (Vector3I neighbor in GetNeighborCells(cell))
 		{
 			if (GetCellState(neighbor) == EmptyCellIdx)
 			{
-				SetCellState(neighbor, GhostCellIdx);
+				cellChanges[neighbor] = GhostCellIdx;
+				_cellStateCache[neighbor] = GhostCellIdx;
 			}
 		}
 	}
