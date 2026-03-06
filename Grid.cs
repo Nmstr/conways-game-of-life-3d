@@ -1,6 +1,8 @@
+using System.Collections.Concurrent;
 using Godot;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Threading.Tasks;
 using Godot.Collections;
 
 
@@ -10,8 +12,10 @@ public partial class Grid : GridMap
 	private const int LivingCellIdx = 0;
 	private const int GhostCellIdx = 1;
 	private int _iterationCount = 0;
+	private bool _iterationLock = false;
+	private int _threadCount = 64;
 	private readonly Stopwatch _stopwatch = new Stopwatch();
-	private readonly System.Collections.Generic.Dictionary<Vector3I, int> _cellStateCache = new System.Collections.Generic.Dictionary<Vector3I, int>();
+	private readonly ConcurrentDictionary<Vector3I, int> _cellStateCache = new ConcurrentDictionary<Vector3I, int>();
 	
 	public override void _Ready()
 	{
@@ -19,13 +23,48 @@ public partial class Grid : GridMap
 		PadGhostCells();
 	}
 
-	private void RunIteration()
+	private async void RunIteration()
 	{
+		if (_iterationLock)
+		{
+			return;  // Last iteration is still calculating
+		}
+		_iterationLock = true;
 		_stopwatch.Start();
 		
+		// Slice used cells into parts for threads
+		Array<Vector3I> usedCells = GetUsedCells();
+		List<Array<Vector3I>> slicedCells = new List<Array<Vector3I>>();
+		int length = usedCells.Count;
+		int baseSize = length / _threadCount;
+		int remainder = length % _threadCount;
+		int start = 0;
+		for (int i = 0; i < _threadCount; i++)
+		{
+			int size = baseSize + (i < remainder ? 1 : 0);
+			var slice = usedCells.Slice(start, size);
+			start += size;
+			slicedCells.Add(slice);
+		}
+		
 		// Calculate changed cells
-		System.Collections.Generic.Dictionary<Vector3I, int> cellChanges = CalculateCellChanges(GetUsedCells());
-
+		List<Task<System.Collections.Generic.Dictionary<Vector3I, int>>> tasks = new List<Task<System.Collections.Generic.Dictionary<Vector3I, int>>>();
+		foreach (Array<Vector3I> slice in slicedCells)
+		{
+			tasks.Add(Task.Run(() => CalculateCellChanges(slice)));
+		}
+		
+		// Put together results
+		var results = await Task.WhenAll(tasks);
+		System.Collections.Generic.Dictionary<Vector3I, int> cellChanges = new System.Collections.Generic.Dictionary<Vector3I, int>();
+		foreach (var dict in results)
+		{
+			foreach (var kvp in dict)
+			{
+				cellChanges.TryAdd(kvp.Key, kvp.Value);
+			}
+		}
+		
 		// Apply changes
 		foreach (Vector3I cell in cellChanges.Keys)
 		{
@@ -34,6 +73,7 @@ public partial class Grid : GridMap
 		
 		_stopwatch.Stop();
 		_iterationCount++;
+		_iterationLock = false;
 		GD.Print("Finished Iteration: ", _iterationCount, ", Took: " + _stopwatch.Elapsed.TotalMilliseconds + "ms");
 		_stopwatch.Reset();
 	}
@@ -139,13 +179,7 @@ public partial class Grid : GridMap
 
 	private int GetCellState(Vector3I cell)
 	{
-		if (_cellStateCache.ContainsKey(cell))
-		{
-			return _cellStateCache[cell];
-		}
-		int cellState = GetCellItem(cell);
-		_cellStateCache.Add(cell, cellState);
-		return cellState;
+		return _cellStateCache.GetOrAdd(cell, c => GetCellItem(c));
 	}
 
 	private void SetCellState(Vector3I cell, int cellState)
